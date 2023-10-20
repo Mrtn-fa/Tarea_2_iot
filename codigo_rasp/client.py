@@ -58,6 +58,7 @@ class ClientHandler:
 
     async def char_write(self, char_uuid, data):
         if self.client == None: return
+        print(char_uuid, data)
         await self.client.write_gatt_char(char_uuid, data)
 
 
