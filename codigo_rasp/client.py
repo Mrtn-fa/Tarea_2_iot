@@ -54,7 +54,7 @@ async def char_write(self, char_uuid, data):
     await self.client.write_gatt_char(char_uuid, data)
 
 
-CHARACTERISTIC_UUID = "0xFF01" # Busquen este valor en el codigo de ejemplo de esp-idf 
+CHARACTERISTIC_UUID = "0000ff01-0000-1000-8000-00805F9B34FB" # Busquen este valor en el codigo de ejemplo de esp-idf 
 
 
 async def main():
