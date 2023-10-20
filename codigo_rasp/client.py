@@ -1,4 +1,4 @@
-from bleak import BleakScanner, 
+from bleak import BleakScanner, BleakClient
 from modelos import create_tables
 from modelos import Configuration
 from peewee import DoesNotExist
