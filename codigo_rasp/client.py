@@ -69,7 +69,7 @@ if __name__ == "__main__":
     
     i = int(input("Escoge un dispositivo para conectarte: "))
     selected_mac = devices[i]
-    c.connect(selected_mac)
+    asyncio.run(c.connect(selected_mac))
     print(TAG, "Conectado a", selected_mac)
 
     actual_config = c.get_config()
