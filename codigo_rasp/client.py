@@ -78,5 +78,6 @@ if __name__ == "__main__":
     actual_config = c.get_config()
     print(TAG, "La configuración es", actual_config)
 
+    asyncio.sleep(5)
     # TODO: enviar actual config
     asyncio.run(c.char_write(CHAR_CONFIG, actual_config))
