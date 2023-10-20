@@ -1,4 +1,4 @@
-from bleak import BleakScanner
+from bleak import BleakScanner, 
 from modelos import create_tables
 from modelos import Configuration
 from peewee import DoesNotExist
@@ -46,8 +46,8 @@ class ClientHandler:
         return devices
     
     async def connect(self, device_mac):
-        self.client = BleakScanner()
-        connected = self.client.connect(device_mac)
+        self.client = BleakClient(device_mac)
+        connected = await self.client.connect()
         return connected
 
     async def char_read(self, char_uuid):
