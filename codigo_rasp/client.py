@@ -54,7 +54,7 @@ async def char_write(self, char_uuid, data):
     await self.client.write_gatt_char(char_uuid, data)
 
 
-CHARACTERISTIC_UUID = "0xFF01" # Busquen este valor en el codigo de ejemplo de esp-idf 
+CHARACTERISTIC_UUID = "FF01" # Busquen este valor en el codigo de ejemplo de esp-idf 
 
 
 async def main():
@@ -66,7 +66,7 @@ async def main():
 
         actual_config = config.get()
         print(TAG, "La configuración es", actual_config)
-        await client.write_gatt_char("0xFF01", b"00")
+        await client.write_gatt_char("FF01", b"00")
         
 
 if __name__ == "__main__":
