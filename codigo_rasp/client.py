@@ -1,6 +1,7 @@
 from bleak import BleakScanner, BleakClient
 from modelos import create_tables
 from modelos import Configuration
+from time import sleep
 from peewee import DoesNotExist
 import asyncio
 
@@ -62,7 +63,7 @@ class ClientHandler:
         await self.client.write_gatt_char(char_uuid, data)
 
 
-if __name__ == "__main__":
+def main():
     c = ClientHandler()
     print(TAG, "Revisando las posibles conexiones...")
     devices = asyncio.run(c.discover())
@@ -78,6 +79,9 @@ if __name__ == "__main__":
     actual_config = c.get_config()
     print(TAG, "La configuración es", actual_config)
 
-    asyncio.sleep(5)
+    sleep(5)
     # TODO: enviar actual config
     asyncio.run(c.char_write(CHAR_CONFIG, actual_config))
+
+if __name__ == "__main__":
+    main()
