@@ -6,6 +6,8 @@ import asyncio
 
 TAG = "[RASP]"
 
+CHAR_CONFIG = "0xFF01"
+
 print(TAG, "Creando tablas")
 create_tables()
 
@@ -74,3 +76,6 @@ if __name__ == "__main__":
 
     actual_config = c.get_config()
     print(TAG, "La configuración es", actual_config)
+
+    # TODO: enviar actual config
+    asyncio.run(c.char_write(CHAR_CONFIG, actual_config))

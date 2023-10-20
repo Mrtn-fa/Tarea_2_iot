@@ -41,7 +41,7 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
 static void gatts_profile_b_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 
 #define GATTS_SERVICE_UUID_TEST_A   0x00FF
-#define GATTS_CHAR_UUID_TEST_A      0xFF01
+// #define GATTS_CHAR_UUID_TEST_A      0xFF01
 #define GATTS_DESCR_UUID_TEST_A     0x3333
 #define GATTS_NUM_HANDLE_TEST_A     4
 
@@ -50,7 +50,10 @@ static void gatts_profile_b_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
 #define GATTS_DESCR_UUID_TEST_B     0x2222
 #define GATTS_NUM_HANDLE_TEST_B     4
 
-#define TEST_DEVICE_NAME            "ESP_GATTS_DEMO"
+
+#define GATTS_CHAR_CONFIG 0xFF01
+
+#define TEST_DEVICE_NAME            "ESP_GATTS_T2"
 #define TEST_MANUFACTURER_DATA_LEN  17
 
 #define GATTS_DEMO_CHAR_VAL_LEN_MAX 0x40
@@ -392,6 +395,16 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
             }
         }
         example_write_event_env(gatts_if, &a_prepare_write_env, param);
+        // Aqui pueden agregar una llamada a funcion o simplemente su codigo directamente
+        char *expected_con_init_msg = "con"; // Aqui podemos algun caracter especial para identificar el mensaje
+
+        if (strncmp((char *)param->write.value, expected_con_init_msg, 3) == 0) {
+        ESP_LOGI(GATTS_TAG, "GATT_WRITE_EVT, value len %d, value :%s",
+                param->write.len, param->write.value);
+
+        // Los contenidos del mensaje se ecuentran en param->write.value
+        // El largo del mensaje se encuentra en param->write.len
+        }
         break;
     }
     case ESP_GATTS_EXEC_WRITE_EVT:
