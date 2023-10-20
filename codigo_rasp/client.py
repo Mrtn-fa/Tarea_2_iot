@@ -35,53 +35,41 @@ class Config:
         self.row.save()
 
 
-class ClientHandler:
-    def __init__(self):
-        self.scanner = BleakScanner()
-        self.client = None
-        self.config = Config()
 
-    def get_config(self):
-        return self.config.get()
+async def discover(self):
+    devices = await self.scanner.discover()
+    return devices
 
-    async def discover(self):
-        devices = await self.scanner.discover()
-        return devices
+async def connect(self, device_mac):
+    self.client = BleakClient(device_mac)
+    connected = await self.client.connect()
+    return connected
+
+async def char_read(self, char_uuid):
+    if self.client == None: return
+    return await self.client.read_gatt_char(char_uuid)
+
+async def char_write(self, char_uuid, data):
+    if self.client == None: return
+    await self.client.write_gatt_char(char_uuid, data)
+
+
+CHARACTERISTIC_UUID = "0xFF01" # Busquen este valor en el codigo de ejemplo de esp-idf 
+
+
+async def main():
+    config = Config()
+
+    ADDRESS = "3c:61:05:65:47:22"
+    async with BleakClient(ADDRESS) as client:
     
-    async def connect(self, device_mac):
-        self.client = BleakClient(device_mac)
-        connected = await self.client.connect()
-        return connected
 
-    async def char_read(self, char_uuid):
-        if self.client == None: return
-        return await self.client.read_gatt_char(char_uuid)
+        actual_config = config.get()
+        print(TAG, "La configuración es", actual_config)
 
-    async def char_write(self, char_uuid, data):
-        if self.client == None: return
-        print(char_uuid, data)
-        await self.client.write_gatt_char(char_uuid, data)
-
-
-def main():
-    c = ClientHandler()
-    print(TAG, "Revisando las posibles conexiones...")
-    devices = asyncio.run(c.discover())
-    print(TAG, "Dispostivos descubiertos:")
-    for i, d in enumerate(devices):
-        print(i, d)
-    
-    i = int(input("Escoge un dispositivo para conectarte: "))
-    selected_mac = devices[i]
-    asyncio.run(c.connect(selected_mac))
-    print(TAG, "Conectado a", selected_mac)
-
-    actual_config = c.get_config()
-    print(TAG, "La configuración es", actual_config)
-
-    sleep(5)
-    # TODO: enviar actual config
-    asyncio.run(c.char_write(CHAR_CONFIG, actual_config))
+        sleep(5)
+        await client.write_gatt_char(CHARACTERISTIC_UUID, b"00")
+        
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
