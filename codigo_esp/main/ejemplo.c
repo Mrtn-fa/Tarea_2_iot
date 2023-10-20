@@ -41,7 +41,7 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
 static void gatts_profile_b_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 
 #define GATTS_SERVICE_UUID_TEST_A   0x00FF
-// #define GATTS_CHAR_UUID_TEST_A      0xFF01
+#define GATTS_CHAR_UUID_TEST_A      0xFF01
 #define GATTS_DESCR_UUID_TEST_A     0x3333
 #define GATTS_NUM_HANDLE_TEST_A     4
 
@@ -51,7 +51,6 @@ static void gatts_profile_b_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
 #define GATTS_NUM_HANDLE_TEST_B     4
 
 
-#define GATTS_CHAR_CONFIG           0xFF01
 
 #define TEST_DEVICE_NAME            "ESP_GATTS_T2"
 #define TEST_MANUFACTURER_DATA_LEN  17
@@ -421,7 +420,7 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
         ESP_LOGI(GATTS_TAG, "CREATE_SERVICE_EVT, status %d,  service_handle %d\n", param->create.status, param->create.service_handle);
         gl_profile_tab[PROFILE_A_APP_ID].service_handle = param->create.service_handle;
         gl_profile_tab[PROFILE_A_APP_ID].char_uuid.len = ESP_UUID_LEN_16;
-        gl_profile_tab[PROFILE_A_APP_ID].char_uuid.uuid.uuid16 = GATTS_CHAR_CONFIG;
+        gl_profile_tab[PROFILE_A_APP_ID].char_uuid.uuid.uuid16 = GATTS_CHAR_UUID_TEST_A;
 
         esp_ble_gatts_start_service(gl_profile_tab[PROFILE_A_APP_ID].service_handle);
         a_property = ESP_GATT_CHAR_PROP_BIT_READ | ESP_GATT_CHAR_PROP_BIT_WRITE | ESP_GATT_CHAR_PROP_BIT_NOTIFY;

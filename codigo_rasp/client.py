@@ -66,7 +66,7 @@ async def main():
 
         actual_config = config.get()
         print(TAG, "La configuración es", actual_config)
-        await client.write_gatt_char(CHARACTERISTIC_UUID, b"00")
+        await client.write_gatt_char("0xFF01", b"00")
         
 
 if __name__ == "__main__":
