@@ -2,6 +2,7 @@ from bleak import BleakScanner
 from modelos import create_tables
 from modelos import Configuration
 from peewee import DoesNotExist
+import asyncio
 
 TAG = "[RASP]"
 
@@ -61,7 +62,7 @@ class ClientHandler:
 if __name__ == "__main__":
     c = ClientHandler()
     print(TAG, "Revisando las posibles conexiones...")
-    devices = c.discover()
+    devices = asyncio.run(c.discover())
     print(TAG, "Dispostivos descubiertos:")
     for i, d in enumerate(devices):
         print(i, d)
