@@ -4,6 +4,7 @@ from modelos import Configuration
 from time import sleep
 from peewee import DoesNotExist
 import asyncio
+from threading import Thread
 
 TAG = "[RASP]"
 
@@ -60,15 +61,26 @@ CHARACTERISTIC_UUID = "0000ff01-0000-1000-8000-00805F9B34FB" # Busquen este valo
 async def main():
     config = Config()
 
-    ADDRESS = "3c:61:05:65:47:22"
-    async with BleakClient(ADDRESS) as client:
-    
+    ADDRESS = ["3c:61:05:65:47:22"]
 
-        actual_config = config.get()
-        print(TAG, "La configuración es", actual_config)
-        res = await client.read_gatt_char(CHARACTERISTIC_UUID)
-        print(f"Se leyo: {res}")
-        await client.write_gatt_char(CHARACTERISTIC_UUID, b"Hola")
+    while True:
+
+        for device in ADDRESS:
+            try:
+                async with BleakClient(device) as client:
+                    actual_config = config.get()
+                    print(TAG, "La configuración es", actual_config)
+                    # se pasa la configuracion
+                    actual_config = f"con{actual_config[0]}{actual_config[1]}"
+                    await client.write_gatt_char(CHARACTERISTIC_UUID, actual_config.encode())
+
+                    # recibe datos
+                    res = await client.read_gatt_char(CHARACTERISTIC_UUID)
+                    print(f"Se leyo: {res}")
+
+
+            except:
+                continue
         
 
 if __name__ == "__main__":

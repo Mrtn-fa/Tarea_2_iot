@@ -36,6 +36,11 @@
 
 #define GATTS_TAG "GATTS_DEMO"
 
+// Variables globales del config
+char tl = '0'
+char protocol = '0'
+
+
 ///Declare the static function
 static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
 static void gatts_profile_b_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param);
@@ -399,7 +404,7 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
 
         if (strncmp((char *)param->write.value, expected_con_init_msg, 3) == 0) {
         ESP_LOGI(GATTS_TAG, "GATT_WRITE_EVT, value len %d, value :%s",
-                param->write.len, param->write.value);
+                param->write.len, param->write.value); // param->write.len = 2; param->write.value: config
 
         // Los contenidos del mensaje se ecuentran en param->write.value
         // El largo del mensaje se encuentra en param->write.len
