@@ -66,7 +66,8 @@ async def main():
 
         actual_config = config.get()
         print(TAG, "La configuración es", actual_config)
-        await client.read_gatt_char(CHARACTERISTIC_UUID)
+        res = await client.read_gatt_char(CHARACTERISTIC_UUID)
+        print(f"Se leyo: {res}")
         await client.write_gatt_char(CHARACTERISTIC_UUID, b"Hola")
         
 
