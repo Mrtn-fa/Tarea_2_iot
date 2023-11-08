@@ -1,4 +1,5 @@
 from bleak import BleakScanner, BleakClient
+from bleak import exc
 from modelos import create_tables
 from modelos import Configuration
 from time import sleep
@@ -87,10 +88,19 @@ async def main():
 
     #     for device in ADDRESS:
 
-    async with BleakClient(ADDRESS[0]) as client:
-        print("me conecté")
-        async with BleakClient(ADDRESS[0]) as asd:
-            print("me conecte de nuevo xd")
+    while True:
+        try:
+            async with BleakClient(ADDRESS[0]) as client:
+                print("me conecté")
+                try:
+                    async with BleakClient(ADDRESS[0]) as asd:
+                        print("me conecte de nuevo xd")
+                except exc.BleakDeviceNotFoundError:
+                    print("not found del segundo")
+
+        except exc.BleakDBusError:
+            continue
+        
             
         
 
