@@ -58,29 +58,40 @@ async def char_write(self, char_uuid, data):
 CHARACTERISTIC_UUID = "0000ff01-0000-1000-8000-00805F9B34FB" # Busquen este valor en el codigo de ejemplo de esp-idf 
 
 
+async def manage_server(device, config):
+    async with BleakClient(device) as client:
+        actual_config = config.get()
+        while actual_config[0] == 0:
+            print(TAG, "La configuración es", actual_config)
+            # se pasa la configuracion
+            actual_config = f"con{actual_config[0]}{actual_config[1]}"
+            await client.write_gatt_char(CHARACTERISTIC_UUID, actual_config.encode())
+
+            # recibe datos
+            res = await client.read_gatt_char(CHARACTERISTIC_UUID)
+            print(f"Se leyo: {res}")
+
+            # los guarda segun lo protocolo
+            # queda por hacer
+
+            actual_config = config.get()
+
+
+
 async def main():
     config = Config()
 
     ADDRESS = ["3c:61:05:65:47:22"]
 
-    while True:
+    # while True:
 
-        for device in ADDRESS:
-            try:
-                async with BleakClient(device) as client:
-                    actual_config = config.get()
-                    print(TAG, "La configuración es", actual_config)
-                    # se pasa la configuracion
-                    actual_config = f"con{actual_config[0]}{actual_config[1]}"
-                    await client.write_gatt_char(CHARACTERISTIC_UUID, actual_config.encode())
+    #     for device in ADDRESS:
 
-                    # recibe datos
-                    res = await client.read_gatt_char(CHARACTERISTIC_UUID)
-                    print(f"Se leyo: {res}")
-
-
-            except:
-                continue
+    async with BleakClient(ADDRESS[0]) as client:
+        print("me conecté")
+        async with BleakClient(ADDRESS[0]) as asd:
+            print("me conecte de nuevo xd")
+            
         
 
 if __name__ == "__main__":
