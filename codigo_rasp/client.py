@@ -158,10 +158,8 @@ async def main():
     config = Config()
 
     ADDRESS = ["3c:61:05:65:47:22"]
-    args = tuple([manage_server(ADDRESS[i], config) for i in range(len(ADDRESS))])
 
-
-    await (asyncio.gather)(args) # ahora solo hay que poner el segundo aca mismo y funca uwu  (en teoria)    
+    await asyncio.gather(manage_server(ADDRESS[0], config)) # ahora solo hay que poner el segundo aca mismo y funca uwu  (en teoria)     
         
             
         

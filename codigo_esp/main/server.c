@@ -311,7 +311,8 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
 
         rsp.attr_value.len = len;
 
-        rsp.attr_value.value = packet;
+        // rsp.attr_value.value = packet;
+        memcpy(rsp.attr_value.value, packet, len);
         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id,
                                             ESP_GATT_OK, &rsp);
     
