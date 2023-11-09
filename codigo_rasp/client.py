@@ -22,6 +22,7 @@ def unpack_msg(packet:bytes):
     print(struct.unpack('<H6BBBH', packet[:12]))
     id, mac1,mac2,mac3,mac4,mac5,mac6, transport_layer, id_protocol, length = struct.unpack('<H6BBBH', packet[:12])
     mac = f"{mac1}{mac2}:{mac3}{mac4}:{mac5}{mac6}"
+    print(mac)
 
     header = {
         'header_id': id,
