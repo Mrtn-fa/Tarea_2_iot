@@ -3,6 +3,9 @@
 #include <string.h>
 #include <inttypes.h>
 #include <math.h>
+#include <time.h>
+#include "esp_sleep.h"
+#include "esp_mac.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"

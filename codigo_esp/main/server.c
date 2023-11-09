@@ -10,7 +10,7 @@ char tl = '0';
 char protocol = '0';
 int packet_id = 0;
 
-
+#define TAG "ASD"
 uint8_t batt_level(){
     return (rand() % 100) + 1;
 }
@@ -41,7 +41,7 @@ struct kpi_data generate_kpi_data(){
 
 uint8_t get_mac_address() {
     uint8_t mac[MAC_ADDR_SIZE];
-    esp_wifi_get_mac(ESP_IF_WIFI_STA, mac);
+    esp_read_mac(mac,2);
     ESP_LOGI("MAC address", "MAC address: %02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
     return mac;
 }
@@ -65,7 +65,6 @@ byte* create_body( int* length){
     if (id_protocol >= 1){
         time_t timestamp;
         time(&timestamp);
-        timestamp = 1696627643;
 
         // ESP_LOGI("offset","protocol 1: %d", bytes_acc);
         // ESP_LOGI("create_body","timestamp: %lld", time(NULL));
@@ -93,11 +92,7 @@ byte* create_body( int* length){
         memcpy(message + bytes_acc + 4*5, &kdata.ampz, 4);
         memcpy(message + bytes_acc + 4*6, &kdata.freqz, 4);
         bytes_acc += arr[3];
-    } if (id_protocol == 4){
-        float *fdata = malloc(12000 * sizeof(float));
-        acc_sensor(fdata);
-        memcpy(message + bytes_acc, (byte *)fdata, 12000 * sizeof(float));
-    }
+    } 
     *length = body_size;
     
     return message;
@@ -108,7 +103,7 @@ struct Message create_msg(byte* body, int body_length){
     msg.id = packet_id;
     packet_id++;
     uint8_t MAC = get_mac_address();
-    ESP_LOGI("Create msg", "MAC address: %s", MAC);
+    // ESP_LOGI("Create msg", "MAC address: %s", MAC);
     memcpy(msg.MAC, MAC, 6);
     msg.transport_layer = tl - '0';
     msg.id_protocol = protocol - '0';
@@ -308,30 +303,18 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
         memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
         rsp.attr_value.handle = param->read.handle;
 
-        rsp.attr_value.len = 1;
         int len;
-        rsp.attr_value.value[0] = create_body(len);
 
-        // switch(protocol){
-        //     case '0': {
-        //         rsp.attr_value.len = 4;
-        //         rsp.attr_value.value[0] = 0x43;
-        //         rsp.attr_value.value[1] = 0x68;
-        //         rsp.attr_value.value[2] = 0x61;
-        //         rsp.attr_value.value[3] = 0x6f;
-        //         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id,
-        //                                     ESP_GATT_OK, &rsp);
-        //     }
-        //     case '1': {
-        //         rsp.attr_value.len = 1;
-        //         rsp.attr_value.value[0] = 0x48;
-        //         // rsp.attr_value.value[1] = 0x6f;
-        //         // rsp.attr_value.value[2] = 0x6c;
-        //         // rsp.attr_value.value[3] = 0x61;
-        //         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id,
-        //                                     ESP_GATT_OK, &rsp);
-        //     }
-        // }
+        byte* body = create_body(&len);
+        struct Message msg = create_msg(body, len); 
+        byte* packet = pack_struct(&msg); 
+
+        rsp.attr_value.len = len;
+
+        rsp.attr_value.value = packet;
+        esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id,
+                                            ESP_GATT_OK, &rsp);
+    
 
         if(tl == '1'){
             esp_deep_sleep_start();
