@@ -59,22 +59,28 @@ async def char_write(self, char_uuid, data):
 CHARACTERISTIC_UUID = "0000ff01-0000-1000-8000-00805F9B34FB" # Busquen este valor en el codigo de ejemplo de esp-idf 
 
 
-async def manage_server(client, config):
-    actual_config = config.get()
-    while actual_config[0] == 0:
-        print(TAG, "La configuración es", actual_config)
-        # se pasa la configuracion
-        actual_config = f"con{actual_config[0]}{actual_config[1]}"
-        await client.write_gatt_char(CHARACTERISTIC_UUID, actual_config.encode())
+async def manage_server(device, config):
+    while True:
+        try:
+            async with BleakClient(device) as client:
+                actual_config = config.get()
+                while actual_config[0] == 0:
+                    print(TAG, "La configuración es", actual_config)
+                    # se pasa la configuracion
+                    actual_config = f"con{actual_config[0]}{actual_config[1]}"
+                    await client.write_gatt_char(CHARACTERISTIC_UUID, actual_config.encode())
 
-        # recibe datos
-        res = await client.read_gatt_char(CHARACTERISTIC_UUID)
-        print(f"Se leyo: {res}")
+                    # recibe datos
+                    res = await client.read_gatt_char(CHARACTERISTIC_UUID)
+                    print(f"Se leyo: {res}")
 
-        # los guarda segun lo protocolo
-        # queda por hacer
+                    # los guarda segun lo protocolo
+                    # queda por hacer
 
-        actual_config = config.get()
+                    actual_config = config.get()
+        except Exception as e:
+            print(e)
+
 
 def execute(client, config):
     loop = asyncio.new_event_loop()
@@ -86,17 +92,7 @@ async def main():
 
     ADDRESS = ["3c:61:05:65:47:22"]
 
-
-    while True:
-        for device in ADDRESS:
-            try:
-                async with BleakClient(device) as client:
-                    thread = Thread(target=execute,args=(client, config))
-                    print("iniciando el thread")
-                    thread.start()
-            except exc.BleakDeviceNotFoundError:
-                pass
-            
+    await asyncio.gather(manage_server(ADDRESS[0], config))            
         
             
         
