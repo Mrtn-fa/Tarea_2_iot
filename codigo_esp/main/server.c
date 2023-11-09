@@ -114,7 +114,6 @@ struct Message create_msg(byte* body, int body_length){
     msg.length = 12 + body_length;
     msg.body = (byte*) malloc(body_length);
     memcpy(msg.body, body, body_length);
-    ESP_LOGI("Create msg","batt level= %d", *(msg.body));
     return msg;
 }
 
@@ -348,7 +347,6 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
         rsp.attr_value.len = len+12;
         for(int i = 0; i < len+12; i++){
             rsp.attr_value.value[i] = packet[i];
-            ESP_LOGI("DEBUGGG", "Packet[%i] = %c", i, packet[i]);
         }
         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id,
                                             ESP_GATT_OK, &rsp);

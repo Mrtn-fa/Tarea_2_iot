@@ -21,7 +21,7 @@ create_tables()
 def unpack_msg(packet:bytes):
     print(struct.unpack('<H6BBBH', packet[:12]))
     id, mac1,mac2,mac3,mac4,mac5,mac6, transport_layer, id_protocol, length = struct.unpack('<H6BBBH', packet[:12])
-    mac = f"{mac1}{mac2}:{mac3}{mac4}:{mac5}{mac6}"
+    mac = f"{hex(mac1)[2:]}:{hex(mac2)[2:]}:{hex(mac3)[2:]}:{hex(mac4)[2:]}:{hex(mac5)[2:]}:{hex(mac6)[2:]}"
     print(mac)
 
     header = {
