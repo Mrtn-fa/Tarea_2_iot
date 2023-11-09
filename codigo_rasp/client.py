@@ -76,7 +76,10 @@ async def manage_server(client, config):
 
         actual_config = config.get()
 
-
+def execute(client, config):
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(manage_server(client, config))
 
 async def main():
     config = Config()
@@ -88,7 +91,7 @@ async def main():
         for device in ADDRESS:
             try:
                 async with BleakClient(device) as client:
-                    thread = Thread(target=asyncio.run,args=(manage_server(client, config)))
+                    thread = Thread(target=execute,args=(client, config))
                     print("iniciando el thread")
                     thread.start()
             except exc.BleakDeviceNotFoundError:
