@@ -88,7 +88,7 @@ async def main():
         for device in ADDRESS:
             try:
                 async with BleakClient(device) as client:
-                    thread = Thread(target=manage_server,args=(client, config))
+                    thread = Thread(target=asyncio.run,args=(manage_server(client, config)))
                     print("iniciando el thread")
                     thread.start()
             except exc.BleakDeviceNotFoundError:
