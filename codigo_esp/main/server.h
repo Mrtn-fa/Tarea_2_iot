@@ -23,6 +23,7 @@
 
 
 // NUESTRAS COSITAS
+#define MAC_ADDR_SIZE 6
 
 
 struct THPC_Data
@@ -43,6 +44,17 @@ struct kpi_data{
     float rms;
 };
 
+typedef char byte;
+
+
+struct Message {
+    uint16_t id;
+    uint8_t MAC[6];
+    uint8_t transport_layer;
+    uint8_t id_protocol;
+    uint16_t length;
+    byte* body;
+};
 
 // FIN DE NUESTRAS COSITAS
 

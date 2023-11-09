@@ -8,6 +8,7 @@
 // Variables globales del config
 char tl = '0';
 char protocol = '0';
+int packet_id = 0;
 
 
 uint8_t batt_level(){
@@ -38,6 +39,105 @@ struct kpi_data generate_kpi_data(){
     return res;
 }
 
+uint8_t get_mac_address() {
+    uint8_t mac[MAC_ADDR_SIZE];
+    esp_wifi_get_mac(ESP_IF_WIFI_STA, mac);
+    ESP_LOGI("MAC address", "MAC address: %02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    return mac;
+}
+
+
+byte* create_body( int* length){
+    // crear body según el id_protocol
+    int arr[4] = {1, 4, 10, 7*4};
+    int body_size = 0;
+    int id_protocol = protocol - '0';
+    for(int i = 0; i <= id_protocol;i++){
+        body_size += arr[i];
+    }
+
+    byte* message = (byte*) malloc(body_size * sizeof(byte));
+
+    int batt = batt_level();
+    // uint8_t batt = 51;
+    int bytes_acc = arr[0];
+    memcpy(message, &batt, 1);
+    if (id_protocol >= 1){
+        time_t timestamp;
+        time(&timestamp);
+        timestamp = 1696627643;
+
+        // ESP_LOGI("offset","protocol 1: %d", bytes_acc);
+        // ESP_LOGI("create_body","timestamp: %lld", time(NULL));
+    
+        memcpy(message + bytes_acc, &timestamp, 4);
+        bytes_acc += arr[1];
+    } if (id_protocol >= 2){
+        struct THPC_Data tdata = generate_THPC_Data();
+        ESP_LOGI("offset","protocol 2: %d", bytes_acc);
+        memcpy(message + bytes_acc, &tdata.temp, 1);
+        memcpy(message + bytes_acc + 1, &tdata.pres, 4);
+        memcpy(message + bytes_acc + 5, &tdata.hum, 1);
+        memcpy(message + bytes_acc + 6, &tdata.co, 4);
+        int temp;
+        memcpy(&temp, message + bytes_acc,1);
+        ESP_LOGI("AAA","temp: %d",temp);
+        bytes_acc += arr[2];
+    } if (id_protocol == 3){
+        struct kpi_data kdata = generate_kpi_data();
+        memcpy(message + bytes_acc, &kdata.rms, 4);
+        memcpy(message + bytes_acc + 4*1, &kdata.ampx, 4);
+        memcpy(message + bytes_acc + 4*2, &kdata.freqx, 4);
+        memcpy(message + bytes_acc + 4*3, &kdata.ampy, 4);
+        memcpy(message + bytes_acc + 4*4, &kdata.freqy, 4);
+        memcpy(message + bytes_acc + 4*5, &kdata.ampz, 4);
+        memcpy(message + bytes_acc + 4*6, &kdata.freqz, 4);
+        bytes_acc += arr[3];
+    } if (id_protocol == 4){
+        float *fdata = malloc(12000 * sizeof(float));
+        acc_sensor(fdata);
+        memcpy(message + bytes_acc, (byte *)fdata, 12000 * sizeof(float));
+    }
+    *length = body_size;
+    
+    return message;
+}
+
+struct Message create_msg(byte* body, int body_length){
+    struct Message msg;
+    msg.id = packet_id;
+    packet_id++;
+    uint8_t MAC = get_mac_address();
+    ESP_LOGI("Create msg", "MAC address: %s", MAC);
+    memcpy(msg.MAC, MAC, 6);
+    msg.transport_layer = tl - '0';
+    msg.id_protocol = protocol - '0';
+    msg.length = 12 + body_length;
+    msg.body = (byte*) malloc(body_length);
+    memcpy(msg.body, body, body_length);
+    ESP_LOGI("Create msg","batt level= %d", *(msg.body));
+    return msg;
+}
+
+byte* pack_struct(struct Message* msg) {
+    int length_msg = msg->length;
+    ESP_LOGI("pack_struct","Body length= %d", length_msg);
+    // int length_packet = 12 + length_msg;
+    byte * packet = malloc(length_msg);
+
+    //headers
+    memcpy(packet, &msg->id, 2);
+    memcpy(packet + 2, &msg->MAC, 6);
+    memcpy(packet + 8, &msg->transport_layer, 1);
+    memcpy(packet + 9, &msg->id_protocol, 1);
+    memcpy(packet + 10, &msg->length, 2);
+
+    //body
+    memcpy(packet + 12, msg->body, length_msg-12);
+    ESP_LOGI("pack_struct","batt level= %d", *(packet + 12));
+    ESP_LOGI(TAG,"Headers puestos");
+    return packet;
+}
 
 
 
@@ -208,27 +308,34 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
         memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
         rsp.attr_value.handle = param->read.handle;
 
-        switch(protocol){
-            case '0': {
-                rsp.attr_value.len = 4;
-                rsp.attr_value.value[0] = 0x43;
-                rsp.attr_value.value[1] = 0x68;
-                rsp.attr_value.value[2] = 0x61;
-                rsp.attr_value.value[3] = 0x6f;
-                esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id,
-                                            ESP_GATT_OK, &rsp);
-            }
-            case '1': {
-                rsp.attr_value.len = 4;
-                rsp.attr_value.value[0] = 0x48;
-                rsp.attr_value.value[1] = 0x6f;
-                rsp.attr_value.value[2] = 0x6c;
-                rsp.attr_value.value[3] = 0x61;
-                esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id,
-                                            ESP_GATT_OK, &rsp);
-            }
-        }
+        rsp.attr_value.len = 1;
+        int len;
+        rsp.attr_value.value[0] = create_body(len);
 
+        // switch(protocol){
+        //     case '0': {
+        //         rsp.attr_value.len = 4;
+        //         rsp.attr_value.value[0] = 0x43;
+        //         rsp.attr_value.value[1] = 0x68;
+        //         rsp.attr_value.value[2] = 0x61;
+        //         rsp.attr_value.value[3] = 0x6f;
+        //         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id,
+        //                                     ESP_GATT_OK, &rsp);
+        //     }
+        //     case '1': {
+        //         rsp.attr_value.len = 1;
+        //         rsp.attr_value.value[0] = 0x48;
+        //         // rsp.attr_value.value[1] = 0x6f;
+        //         // rsp.attr_value.value[2] = 0x6c;
+        //         // rsp.attr_value.value[3] = 0x61;
+        //         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id,
+        //                                     ESP_GATT_OK, &rsp);
+        //     }
+        // }
+
+        if(tl == '1'){
+            esp_deep_sleep_start();
+        }
         
         break;
     }
@@ -569,6 +676,8 @@ static void gatts_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_
 void app_main(void)
 {
     esp_err_t ret;
+
+    esp_sleep_enable_timer_wakeup(6000000000);
 
     // Initialize NVS.
     ret = nvs_flash_init();

@@ -63,8 +63,8 @@ async def manage_server(device, config):
     while True:
         try:
             async with BleakClient(device) as client:
-                actual_config = config.get()
-                while actual_config[0] == 0:
+                while True:
+                    actual_config = config.get()
                     print(TAG, "La configuración es", actual_config)
                     # se pasa la configuracion
                     actual_config = f"con{actual_config[0]}{actual_config[1]}"
@@ -77,7 +77,8 @@ async def manage_server(device, config):
                     # los guarda segun lo protocolo
                     # queda por hacer
 
-                    actual_config = config.get()
+                    if actual_config[0] != 0:
+                        break
         except Exception as e:
             print(e)
 
@@ -92,7 +93,7 @@ async def main():
 
     ADDRESS = ["3c:61:05:65:47:22"]
 
-    await asyncio.gather(manage_server(ADDRESS[0], config))            
+    await asyncio.gather(manage_server(ADDRESS[0], config)) # ahora solo hay que poner el segundo aca mismo y funca uwu  (en teoria)    
         
             
         
