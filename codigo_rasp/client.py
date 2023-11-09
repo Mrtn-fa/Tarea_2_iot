@@ -29,7 +29,8 @@ def unpack_msg(packet:bytes):
         'header_mac': str(mac),
         'transport_layer': transport_layer,
         'id_protocol': id_protocol,
-        'length': length
+        'length': length,
+        'id_device': mac[:2]
     }
     body_packet = packet[12:] # struct.unpack('<{}s'.format(length), packet[12:])[0].decode('utf-8')
     print("body bytes: ", body_packet)
