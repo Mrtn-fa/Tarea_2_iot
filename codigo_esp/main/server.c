@@ -102,9 +102,13 @@ struct Message create_msg(byte* body, int body_length){
     struct Message msg;
     msg.id = packet_id;
     packet_id++;
-    uint8_t MAC = get_mac_address();
-    // ESP_LOGI("Create msg", "MAC address: %s", MAC);
-    memcpy(msg.MAC, MAC, 6);
+    uint8_t mac[MAC_ADDR_SIZE];
+    esp_read_mac(mac,2);
+    ESP_LOGI("MAC address", "MAC address: %02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
+    for (int i=0; i<6; i++){
+        msg.MAC[i] = mac[i];
+    }
+    ESP_LOGI("Create msg", "DESPUES de MEMCPY");
     msg.transport_layer = tl - '0';
     msg.id_protocol = protocol - '0';
     msg.length = 12 + body_length;
@@ -135,6 +139,28 @@ byte* pack_struct(struct Message* msg) {
 }
 
 
+char* stringToHex(const char* input) {
+    // Calculate the length of the hexadecimal representation
+    size_t len = strlen(input);
+    size_t hex_len = len * 2; // Two characters per byte
+
+    // Allocate memory for the hexadecimal representation (+1 for the null terminator)
+    char* hex_string = (char*)malloc(hex_len + 1);
+    if (hex_string == NULL) {
+        perror("Memory allocation error");
+        exit(EXIT_FAILURE);
+    }
+
+    // Convert each character to its hexadecimal representation
+    for (size_t i = 0, j = 0; i < len; ++i, j += 2) {
+        sprintf(hex_string + j, "%02X", input[i]);
+    }
+
+    // Add the null terminator
+    hex_string[hex_len] = '\0';
+
+    return hex_string;
+}
 
 // ************************************ FIN DE NUESTRAS COSITAS UWU *****************************************
 
@@ -297,7 +323,7 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
 #endif
         esp_ble_gatts_create_service(gatts_if, &gl_profile_tab[PROFILE_A_APP_ID].service_id, GATTS_NUM_HANDLE_TEST_A);
         break;
-    case ESP_GATTS_READ_EVT: {
+    case ESP_GATTS_READ_EVT: { // ******************************************************************* COSAS IMPORTANTES QUE CAMBIAMOS *****************************
         ESP_LOGI(GATTS_TAG, "GATT_READ_EVT, conn_id %d, trans_id %" PRIu32 ", handle %d\n", param->read.conn_id, param->read.trans_id, param->read.handle);
         esp_gatt_rsp_t rsp;
         memset(&rsp, 0, sizeof(esp_gatt_rsp_t));
@@ -309,10 +335,20 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
         struct Message msg = create_msg(body, len); 
         byte* packet = pack_struct(&msg); 
 
-        rsp.attr_value.len = len;
 
-        // rsp.attr_value.value = packet;
-        memcpy(rsp.attr_value.value, packet, len);
+        // rsp.attr_value.len = 4;
+        // rsp.attr_value.value[0] = 0xde;
+        // rsp.attr_value.value[1] = 0xed;
+        // rsp.attr_value.value[2] = 0xbe;
+        // rsp.attr_value.value[3] = 0xef;
+        // esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id,
+        //                             ESP_GATT_OK, &rsp);
+        // break;
+
+        rsp.attr_value.len = len+12;
+        for(int i = 0; i < len; i++){
+            rsp.attr_value.value[i] = packet[i];
+        }
         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id,
                                             ESP_GATT_OK, &rsp);
     
@@ -378,7 +414,8 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
 
         // Los contenidos del mensaje se ecuentran en param->write.value
         // El largo del mensaje se encuentra en param->write.len
-        }
+        } // ******************************************************************* FIN COSAS IMPORTANTES QUE CAMBIAMOS *****************************
+
         break;
     }
     case ESP_GATTS_EXEC_WRITE_EVT:

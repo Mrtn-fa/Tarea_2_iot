@@ -62,7 +62,7 @@ def parse_body(body:bytes, id_protocol:int) -> dict:
         d[data[k]] = parsed_data[k]
     return d
 
-def create_data_row(self, data:dict):
+def create_data_row(data:dict):
     Datos.create(**data)
     print("[SERVER] Creada fila de la tabla Datos:", data)
 
