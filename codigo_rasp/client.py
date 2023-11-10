@@ -62,7 +62,7 @@ def parse_body(body:bytes, id_protocol:int) -> dict:
 
 def create_data_row(data:dict):
     Datos.create(**data)
-    print("[SERVER] Creada fila de la tabla Datos:", data)
+    print(TAG,"Creada fila de la tabla Datos:", data)
 
 def create_log_row(config, id_device):
     timestamp = datetime.now()
@@ -73,9 +73,8 @@ def create_log_row(config, id_device):
         'id_protocol': configs[1],
         'timestamp': timestamp
     }
-    print(log)
     Logs.create(**log)
-    print("[SERVER] Creada fila de la tabla Logs:", log)
+    print(TAG,"Creada fila de la tabla Logs:", log)
 
 class Config:
     def __init__(self, transport_layer=0, id_protocol=0):
@@ -126,6 +125,7 @@ async def manage_server(device, config):
     while True:
         try:
             async with BleakClient(device, timeout=50) as client:
+                print(TAG, "Conected with: ", client.address)
                 create_log_row(config, client.address[:5])
                 while True:
                     actual_config = config.get()
@@ -136,10 +136,8 @@ async def manage_server(device, config):
 
                     # recibe datos
                     res = await client.read_gatt_char(CHARACTERISTIC_UUID)
-                    print(f"Se leyo: {res}")
 
                     unpacked = unpack_msg(res)
-                    print("Unpacked: ", unpacked)
                     create_data_row(unpacked)
 
                    
@@ -147,6 +145,7 @@ async def manage_server(device, config):
                     if actual_config[0] != 0:
                         # le ponemos que se duerma igual?
                         await client.disconnect()
+                        print(TAG, "Disconnected with: ", client.address)
                         break
                 
         except Exception as e:
@@ -157,9 +156,9 @@ async def manage_server(device, config):
 async def main():
     config = Config()
 
-    ADDRESS = ["3c:61:05:65:47:22"]
+    ADDRESS = ["3c:61:05:65:47:22","3c:61:05:65:47:23"]
 
-    await asyncio.gather(manage_server(ADDRESS[0], config)) # ahora solo hay que poner el segundo aca mismo y funca uwu  (en teoria)     
+    await asyncio.gather(manage_server(ADDRESS[0], config), manage_server(ADDRESS[1], config)) # ahora solo hay que poner el segundo aca mismo y funca uwu  (en teoria)     
         
             
         
