@@ -143,11 +143,11 @@ async def manage_server(device, config):
                     res = await client.read_gatt_char(CHARACTERISTIC_UUID)
 
                     unpacked = unpack_msg(res)
-                    if delta_time == 0:
-                        delta_time = first_time - unpacked["timestamp"]
+                    if delta_time == 0 and actual_config[1] > 0:
+                        delta_time = datetime.now().timestamp() - unpacked["timestamp"] # cuando se prendio
                     
-                    elif actual_config[1] > 0:
-                        unpacked["timestamp"] = delta_time + unpacked["timestamp"]
+                    if actual_config[1] > 0:
+                        unpacked["timestamp"] = delta_time + unpacked["timestamp"] # cuando se prendio + segundos que pasaron desde que se prendio
 
                     create_data_row(unpacked)
 
