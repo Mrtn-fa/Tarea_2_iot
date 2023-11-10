@@ -8,6 +8,7 @@ import asyncio
 import struct
 from modelos import Configuration, Datos, Logs
 from datetime import datetime
+from threading import Thread
 
 
 TAG = "[RASP]"
@@ -157,7 +158,12 @@ async def main():
 
     ADDRESS = ["3c:61:05:65:47:22","23:06:05:65:47:23"]
 
-    await asyncio.gather(manage_server(ADDRESS[0], config), manage_server(ADDRESS[1], config)) # ahora solo hay que poner el segundo aca mismo y funca uwu  (en teoria)     
+    for device in ADDRESS:
+        t = Thread(target=asyncio.run, args=(manage_server(device, config),))
+        t.start()
+
+
+    # await asyncio.gather(manage_server(ADDRESS[0], config), manage_server(ADDRESS[1], config)) # ahora solo hay que poner el segundo aca mismo y funca uwu  (en teoria)     
         
             
         
