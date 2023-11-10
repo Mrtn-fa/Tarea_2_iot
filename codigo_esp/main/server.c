@@ -8,7 +8,7 @@
 // Variables globales del config
 char tl = '0';
 char protocol = '0';
-int packet_id = 0;
+int packet_id = rand();
 
 #define TAG "ASD"
 uint8_t batt_level(){
@@ -56,7 +56,7 @@ byte* create_body( int* length){
     memcpy(message, &batt, 1);
     if (id_protocol >= 1){
         time_t timestamp;
-        time(&timestamp);
+        time(&timestamp); // milisegundos desde que se prendio la esp
 
         ESP_LOGI("create_body","timestamp: %lld", timestamp);
     

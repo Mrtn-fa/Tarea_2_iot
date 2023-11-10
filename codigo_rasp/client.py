@@ -6,7 +6,7 @@ from time import sleep
 from peewee import DoesNotExist
 import asyncio
 import struct
-from modelos import Configuration, Datos, Logs
+from modelos import Configuration, Datos, Logs, Loss
 from datetime import datetime
 from threading import Thread
 
@@ -78,6 +78,14 @@ def create_log_row(config, id_device):
     print(TAG,"Creada fila de la tabla Logs:", log)
     return timestamp.timestamp()
 
+def create_loss_row(delay, loss):
+    loss = {
+        'delay': delay,
+        'packet_loss': loss
+    }
+    Loss.create(**loss)
+    print(TAG,"Creada fila de la tabla Loss:", loss)
+
 class Config:
     def __init__(self, transport_layer=0, id_protocol=0):
         self.transport_layer = transport_layer
@@ -129,12 +137,12 @@ async def manage_server(device, config):
         try:
             async with BleakClient(device, timeout=5) as client:
                 print(TAG, "Conected with: ", client.address)
-                first_time = create_log_row(config, client.address[:5])
                 delta_time = 0
                 
                 while True:
                     actual_config = config.get()
                     print(TAG, "La configuración es", actual_config)
+
                     # se pasa la configuracion
                     send_config = f"con{actual_config[0]}{actual_config[1]}"
                     await client.write_gatt_char(CHARACTERISTIC_UUID, send_config.encode())
@@ -143,18 +151,23 @@ async def manage_server(device, config):
                     res = await client.read_gatt_char(CHARACTERISTIC_UUID)
 
                     unpacked = unpack_msg(res)
+
                     if delta_time == 0 and actual_config[1] > 0:
                         delta_time = datetime.now().timestamp() - unpacked["timestamp"] # cuando se prendio
                     
                     if actual_config[1] > 0:
                         unpacked["timestamp"] = delta_time + unpacked["timestamp"] # cuando se prendio + segundos que pasaron desde que se prendio
 
+                    # lo sube a la tabla
                     create_data_row(unpacked)
+                    delay = datetime.now().timestamp() - unpacked["timestamp"]
+                    loss = unpacked["length"] - len(res) -12
+                    create_loss_row(delay, loss)
 
+                    # sleep piola pa que no explote
                     await asyncio.sleep(1)
 
                     if actual_config[0] == 1:
-                        # le ponemos que se duerma igual?
                         print(TAG, "Disconnected with: ", client.address)
                         break
 
