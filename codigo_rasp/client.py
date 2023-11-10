@@ -19,10 +19,8 @@ create_tables()
 
 
 def unpack_msg(packet:bytes):
-    print(struct.unpack('<H6BBBH', packet[:12]))
     id, mac1,mac2,mac3,mac4,mac5,mac6, transport_layer, id_protocol, length = struct.unpack('<H6BBBH', packet[:12])
     mac = f"{hex(mac1)[2:]}:{hex(mac2)[2:]}:{hex(mac3)[2:]}:{hex(mac4)[2:]}:{hex(mac5)[2:]}:{hex(mac6)[2:]}"
-    print(mac)
 
     header = {
         'header_id': id,
@@ -30,10 +28,9 @@ def unpack_msg(packet:bytes):
         'transport_layer': transport_layer,
         'id_protocol': id_protocol,
         'length': length,
-        'id_device': mac[:2]
+        'id_device': mac[:5]
     }
     body_packet = packet[12:] # struct.unpack('<{}s'.format(length), packet[12:])[0].decode('utf-8')
-    print("body bytes: ", body_packet)
     body = parse_body(body_packet, id_protocol)
     return dict(header, **body) # retorna los datos usados por la tabla Datos
 
@@ -51,7 +48,6 @@ def parse_body(body:bytes, id_protocol:int) -> dict:
         # HEADERS + Batt_level + Timestamp 
         pass
     elif id_protocol == 2:
-        print(len(body))
         parsed_data = struct.unpack('<BLBiBf', body)
         # Estructura del protocolo 1
         # HEADERS + Batt_level + Timestamp + Temp + Press + Hum +Co
@@ -68,10 +64,9 @@ def create_data_row(data:dict):
     Datos.create(**data)
     print("[SERVER] Creada fila de la tabla Datos:", data)
 
-def create_log_row(self, id_device):
+def create_log_row(config, id_device):
     timestamp = datetime.now()
-    config = self.config.get()
-    print(config)
+    config = config.get()
     log = {
         'id_device': id_device,
         'transport_layer':config['transport_layer'],
@@ -131,8 +126,8 @@ async def manage_server(device, config):
     while True:
         try:
             async with BleakClient(device, timeout=50) as client:
-                client.connect()
-                print("addres???: ", client.address)
+                await client.connect()
+                create_log_row(config, client.address[:5])
                 while True:
                     actual_config = config.get()
                     print(TAG, "La configuración es", actual_config)
@@ -152,7 +147,7 @@ async def manage_server(device, config):
 
                     if actual_config[0] != 0:
                         # le ponemos que se duerma igual?
-                        client.disconnect()
+                        await client.disconnect()
                         break
                 
         except Exception as e:
