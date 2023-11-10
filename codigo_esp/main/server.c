@@ -8,7 +8,7 @@
 // Variables globales del config
 char tl = '0';
 char protocol = '0';
-int packet_id = rand();
+int packet_id = 0;
 
 #define TAG "ASD"
 uint8_t batt_level(){

@@ -160,7 +160,7 @@ async def manage_server(device, config):
 
                     # lo sube a la tabla
                     create_data_row(unpacked)
-                    delay = datetime.now().timestamp() - unpacked["timestamp"]
+                    delay = (datetime.now().timestamp() - unpacked["timestamp"]) * 1000 # para pasar a mili segundos
                     loss = unpacked["length"] - len(res)
                     create_loss_row(delay, loss)
 

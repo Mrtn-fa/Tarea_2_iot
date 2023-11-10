@@ -51,7 +51,7 @@ class Configuration(BaseModel):
     transport_layer = IntegerField()
 
 class Loss(BaseModel):
-    delay = IntegerField() # ms
+    delay = FloatField() # ms
     packet_loss = IntegerField()
 
 
