@@ -66,11 +66,11 @@ def create_data_row(data:dict):
 
 def create_log_row(config, id_device):
     timestamp = datetime.now()
-    config = config.get()
+    configs = config.get()
     log = {
         'id_device': id_device,
-        'transport_layer':config['transport_layer'],
-        'id_protocol': config['id_protocol'],
+        'transport_layer':configs[0],
+        'id_protocol': configs[1],
         'timestamp': timestamp
     }
     print(log)
@@ -126,8 +126,7 @@ async def manage_server(device, config):
     while True:
         try:
             async with BleakClient(device, timeout=50) as client:
-                print("id: ", str(client.address)[:5])
-                create_log_row(config, str(client.address)[:5])
+                create_log_row(config, client.address[:5])
                 while True:
                     actual_config = config.get()
                     print(TAG, "La configuración es", actual_config)
