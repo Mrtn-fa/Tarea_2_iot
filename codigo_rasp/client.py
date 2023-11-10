@@ -153,7 +153,7 @@ async def manage_server(device, config):
 
                    
 
-                    if actual_config[0] != 0:
+                    if actual_config[0] == 1:
                         # le ponemos que se duerma igual?
                         print(TAG, "Disconnected with: ", client.address)
                         break
