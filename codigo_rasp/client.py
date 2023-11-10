@@ -124,30 +124,36 @@ CHARACTERISTIC_UUID = "0000ff01-0000-1000-8000-00805F9B34FB" # Busquen este valo
 
 async def manage_server(device, config):
     while True:
-        # try:
         print(TAG, "trying to connect to: ", device)
-        async with BleakClient(device, timeout=50) as client:
-            print(TAG, "Conected with: ", client.address)
-            create_log_row(config, client.address[:5])
-            while True:
-                actual_config = config.get()
-                print(TAG, "La configuración es", actual_config)
-                # se pasa la configuracion
-                actual_config = f"con{actual_config[0]}{actual_config[1]}"
-                await client.write_gatt_char(CHARACTERISTIC_UUID, actual_config.encode())
+        try:
+            async with BleakClient(device, timeout=5) as client:
+                print(TAG, "Conected with: ", client.address)
+                create_log_row(config, client.address[:5])
+                while True:
+                    actual_config = config.get()
+                    print(TAG, "La configuración es", actual_config)
+                    # se pasa la configuracion
+                    actual_config = f"con{actual_config[0]}{actual_config[1]}"
+                    await client.write_gatt_char(CHARACTERISTIC_UUID, actual_config.encode())
 
-                # recibe datos
-                res = await client.read_gatt_char(CHARACTERISTIC_UUID)
+                    # recibe datos
+                    res = await client.read_gatt_char(CHARACTERISTIC_UUID)
 
-                unpacked = unpack_msg(res)
-                create_data_row(unpacked)
+                    unpacked = unpack_msg(res)
+                    create_data_row(unpacked)
 
-                
+                   
 
-                if actual_config[0] != 0:
-                    # le ponemos que se duerma igual?
-                    print(TAG, "Disconnected with: ", client.address)
-                    break
+                    if actual_config[0] != 0:
+                        # le ponemos que se duerma igual?
+                        print(TAG, "Disconnected with: ", client.address)
+                        break
+
+        except (exc.BleakDBusError, exc.BleakDeviceNotFoundError):
+            await asyncio.sleep(5)
+
+        except exc.BleakError:
+            pass
                 
         
 
