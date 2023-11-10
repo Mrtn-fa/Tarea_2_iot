@@ -54,7 +54,7 @@ def parse_body(body:bytes, id_protocol:int) -> dict:
         # HEADERS + Batt_level + Timestamp + Temp + Press + Hum +Co
         pass
     elif id_protocol == 3:
-        parsed_data = struct.unpack('<BLBiBifffffff', body)
+        parsed_data = struct.unpack('<BLBiBffffffff', body)
     
     l = len(parsed_data)
     for k in range(l):
