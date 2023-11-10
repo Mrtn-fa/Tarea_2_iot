@@ -146,6 +146,7 @@ async def manage_server(device, config):
                     # se pasa la configuracion
                     send_config = f"con{actual_config[0]}{actual_config[1]}"
                     await client.write_gatt_char(CHARACTERISTIC_UUID, send_config.encode())
+                    read_time = datetime.now().time()
 
                     # recibe datos
                     res = await client.read_gatt_char(CHARACTERISTIC_UUID)
@@ -160,7 +161,7 @@ async def manage_server(device, config):
 
                     # lo sube a la tabla
                     create_data_row(unpacked)
-                    delay = (datetime.now().timestamp() - unpacked["timestamp"]) * 1000 # para pasar a mili segundos
+                    delay = (datetime.now().timestamp() - read_time) * 1000 # para pasar a mili segundos
                     loss = unpacked["length"] - len(res)
                     create_loss_row(delay, loss)
 
