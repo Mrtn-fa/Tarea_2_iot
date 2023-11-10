@@ -144,7 +144,6 @@ async def manage_server(device, config):
 
                     if actual_config[0] != 0:
                         # le ponemos que se duerma igual?
-                        await client.disconnect()
                         print(TAG, "Disconnected with: ", client.address)
                         break
                 
@@ -156,7 +155,7 @@ async def manage_server(device, config):
 async def main():
     config = Config()
 
-    ADDRESS = ["3c:61:05:65:47:22","3c:61:05:65:47:23"]
+    ADDRESS = ["3c:61:05:65:47:22","23:06:05:65:47:23"]
 
     await asyncio.gather(manage_server(ADDRESS[0], config), manage_server(ADDRESS[1], config)) # ahora solo hay que poner el segundo aca mismo y funca uwu  (en teoria)     
         
