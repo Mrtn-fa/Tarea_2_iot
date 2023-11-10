@@ -93,7 +93,7 @@ class Config:
 
     def get(self):
         self.row = self.config.get_by_id(1)
-        return (int(self.row.transport_layer), int(self.row.id_protocol))
+        return (self.row.transport_layer, self.row.id_protocol)
     
     def set(self, transport_layer, id_protocol):
         self.row.transport_layer = transport_layer
@@ -136,8 +136,8 @@ async def manage_server(device, config):
                     actual_config = config.get()
                     print(TAG, "La configuración es", actual_config)
                     # se pasa la configuracion
-                    actual_config = f"con{actual_config[0]}{actual_config[1]}"
-                    await client.write_gatt_char(CHARACTERISTIC_UUID, actual_config.encode())
+                    send_config = f"con{actual_config[0]}{actual_config[1]}"
+                    await client.write_gatt_char(CHARACTERISTIC_UUID, send_config.encode())
 
                     # recibe datos
                     res = await client.read_gatt_char(CHARACTERISTIC_UUID)
