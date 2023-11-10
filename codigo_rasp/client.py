@@ -137,6 +137,7 @@ async def manage_server(device, config):
         try:
             async with BleakClient(device, timeout=5) as client:
                 print(TAG, "Conected with: ", client.address)
+                create_log_row(config, device)
                 delta_time = 0
                 
                 while True:
