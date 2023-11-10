@@ -151,7 +151,9 @@ async def manage_server(device, config):
         except Exception as e:
             print(e)
 
-
+def thread_target(loop, device, config):
+    asyncio.set_event_loop(loop)
+    loop.run_until_complete(manage_server(device, config))
 
 async def main():
     config = Config()
@@ -159,8 +161,15 @@ async def main():
     ADDRESS = ["3c:61:05:65:47:22","23:06:05:65:47:23"]
 
     for device in ADDRESS:
-        t = Thread(target=asyncio.run, args=(manage_server(device, config),))
-        t.start()
+        # Create an event loop
+        loop = asyncio.new_event_loop()
+
+        # Create a thread with the asynchronous target
+        thread = Thread(target=thread_target, args=(loop,device, config))
+
+        # Start the thread
+        thread.start()
+
 
 
     # await asyncio.gather(manage_server(ADDRESS[0], config), manage_server(ADDRESS[1], config)) # ahora solo hay que poner el segundo aca mismo y funca uwu  (en teoria)     
