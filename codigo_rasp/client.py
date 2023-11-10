@@ -7,7 +7,7 @@ from peewee import DoesNotExist
 import asyncio
 import struct
 from modelos import Configuration, Datos, Logs
-import datetime
+from datetime import datetime
 
 
 TAG = "[RASP]"
