@@ -161,7 +161,7 @@ async def manage_server(device, config):
                     # lo sube a la tabla
                     create_data_row(unpacked)
                     delay = datetime.now().timestamp() - unpacked["timestamp"]
-                    loss = unpacked["length"] - len(res) -12
+                    loss = unpacked["length"] - len(res)
                     create_loss_row(delay, loss)
 
                     # sleep piola pa que no explote
