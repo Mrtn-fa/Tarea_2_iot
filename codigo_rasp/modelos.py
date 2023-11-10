@@ -37,7 +37,7 @@ class Datos(BaseModel):
     amp_z = FloatField(null=True)
     frec_z = FloatField(null=True)
     
-    timestamp = TimestampField()
+    timestamp = TimestampField(null=True)
     id_device = CharField()
 
 class Logs(BaseModel):

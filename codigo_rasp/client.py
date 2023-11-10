@@ -150,6 +150,7 @@ async def manage_server(device, config):
                     # queda por hacer
 
                     if actual_config[0] != 0:
+                        # le ponemos que se duerma igual?
                         break
         except Exception as e:
             print(e)

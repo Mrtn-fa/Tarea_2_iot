@@ -39,12 +39,6 @@ struct kpi_data generate_kpi_data(){
     return res;
 }
 
-uint8_t get_mac_address() {
-    uint8_t mac[MAC_ADDR_SIZE];
-    esp_read_mac(mac,2);
-    ESP_LOGI("MAC address", "MAC address: %02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]);
-    return mac;
-}
 
 
 byte* create_body( int* length){
@@ -138,28 +132,7 @@ byte* pack_struct(struct Message* msg) {
 }
 
 
-char* stringToHex(const char* input) {
-    // Calculate the length of the hexadecimal representation
-    size_t len = strlen(input);
-    size_t hex_len = len * 2; // Two characters per byte
 
-    // Allocate memory for the hexadecimal representation (+1 for the null terminator)
-    char* hex_string = (char*)malloc(hex_len + 1);
-    if (hex_string == NULL) {
-        perror("Memory allocation error");
-        exit(EXIT_FAILURE);
-    }
-
-    // Convert each character to its hexadecimal representation
-    for (size_t i = 0, j = 0; i < len; ++i, j += 2) {
-        sprintf(hex_string + j, "%02X", input[i]);
-    }
-
-    // Add the null terminator
-    hex_string[hex_len] = '\0';
-
-    return hex_string;
-}
 
 // ************************************ FIN DE NUESTRAS COSITAS UWU *****************************************
 
@@ -335,14 +308,6 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
         byte* packet = pack_struct(&msg); 
 
 
-        // rsp.attr_value.len = 4;
-        // rsp.attr_value.value[0] = 0xde;
-        // rsp.attr_value.value[1] = 0xed;
-        // rsp.attr_value.value[2] = 0xbe;
-        // rsp.attr_value.value[3] = 0xef;
-        // esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id,
-        //                             ESP_GATT_OK, &rsp);
-        // break;
 
         rsp.attr_value.len = len+12;
         for(int i = 0; i < len+12; i++){
@@ -351,10 +316,6 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
         esp_ble_gatts_send_response(gatts_if, param->read.conn_id, param->read.trans_id,
                                             ESP_GATT_OK, &rsp);
     
-
-        if(tl == '1'){
-            esp_deep_sleep_start();
-        }
         
         break;
     }
@@ -518,6 +479,11 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
     default:
         break;
     }
+    // if(tl == '1'){
+    //     ESP_LOGI("DEBUG","a mimir");
+    //     // vTaskDelay(5000 / portTICK_PERIOD_MS);
+    //     esp_deep_sleep_start();
+    // }
 }
 
 static void gatts_profile_b_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
@@ -756,6 +722,12 @@ void app_main(void)
     if (local_mtu_ret){
         ESP_LOGE(GATTS_TAG, "set local  MTU failed, error code = %x", local_mtu_ret);
     }
+
+    while(tl == 0){
+        vTaskDelay(5000 / portTICK_PERIOD_MS);
+    }
+    ESP_LOGI("DEBUG","a mimir");
+    esp_deep_sleep_start();
 
     return;
 }
