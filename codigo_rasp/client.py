@@ -126,7 +126,6 @@ async def manage_server(device, config):
     while True:
         try:
             async with BleakClient(device, timeout=50) as client:
-                await client.connect()
                 create_log_row(config, client.address[:5])
                 while True:
                     actual_config = config.get()
