@@ -130,7 +130,7 @@ CHARACTERISTIC_UUID = "0000ff01-0000-1000-8000-00805F9B34FB" # Busquen este valo
 async def manage_server(device, config):
     while True:
         try:
-            async with BleakClient(device, timeout=-1) as client:
+            async with BleakClient(device, timeout=50) as client:
                 client.connect()
                 print("addres???: ", client.address)
                 while True:
