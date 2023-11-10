@@ -146,7 +146,7 @@ async def manage_server(device, config):
                     # se pasa la configuracion
                     send_config = f"con{actual_config[0]}{actual_config[1]}"
                     await client.write_gatt_char(CHARACTERISTIC_UUID, send_config.encode())
-                    read_time = datetime.now().time()
+                    read_time = datetime.now().timestamp()
 
                     # recibe datos
                     res = await client.read_gatt_char(CHARACTERISTIC_UUID)
