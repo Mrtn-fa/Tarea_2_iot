@@ -93,7 +93,7 @@ class Config:
 
     def get(self):
         self.row = self.config.get_by_id(1)
-        return (self.row.transport_layer, self.row.id_protocol)
+        return (int(self.row.transport_layer), int(self.row.id_protocol))
     
     def set(self, transport_layer, id_protocol):
         self.row.transport_layer = transport_layer
