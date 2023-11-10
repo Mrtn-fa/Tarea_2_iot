@@ -159,18 +159,12 @@ async def main():
     config = Config()
 
     ADDRESS = ["3c:61:05:65:47:22","23:06:05:65:47:23"]
+    connection_tasks = []
 
     for device in ADDRESS:
-        # Create an event loop
-        loop = asyncio.new_event_loop()
+        connection_tasks.append(manage_server(device, config))
 
-        # Create a thread with the asynchronous target
-        thread = Thread(target=thread_target, args=(loop,device, config))
-
-        # Start the thread
-        thread.start()
-
-
+    await asyncio.gather(*connection_tasks)
 
     # await asyncio.gather(manage_server(ADDRESS[0], config), manage_server(ADDRESS[1], config)) # ahora solo hay que poner el segundo aca mismo y funca uwu  (en teoria)     
         
