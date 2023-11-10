@@ -76,6 +76,7 @@ def create_log_row(config, id_device):
     }
     Logs.create(**log)
     print(TAG,"Creada fila de la tabla Logs:", log)
+    return timestamp.timestamp()
 
 class Config:
     def __init__(self, transport_layer=0, id_protocol=0):
@@ -128,7 +129,9 @@ async def manage_server(device, config):
         try:
             async with BleakClient(device, timeout=5) as client:
                 print(TAG, "Conected with: ", client.address)
-                create_log_row(config, client.address[:5])
+                first_time = create_log_row(config, client.address[:5])
+                delta_time = 0
+                
                 while True:
                     actual_config = config.get()
                     print(TAG, "La configuración es", actual_config)
@@ -140,6 +143,12 @@ async def manage_server(device, config):
                     res = await client.read_gatt_char(CHARACTERISTIC_UUID)
 
                     unpacked = unpack_msg(res)
+                    if delta_time == 0:
+                        delta_time = first_time - unpacked["timestamp"]
+                    
+                    elif actual_config[1] > 0:
+                        unpacked["timestamp"] = delta_time + unpacked["timestamp"]
+
                     create_data_row(unpacked)
 
                    
@@ -152,8 +161,8 @@ async def manage_server(device, config):
         except (exc.BleakDBusError, exc.BleakDeviceNotFoundError):
             await asyncio.sleep(5)
 
-        except exc.BleakError:
-            pass
+        except exc.BleakError as e:
+            print(e)
                 
         
 
@@ -164,7 +173,9 @@ def thread_target(loop, device, config):
 async def main():
     config = Config()
 
-    ADDRESS = ["3c:61:05:65:47:22","23:06:05:65:47:23"]
+    ADDRESS = ["3c:61:05:65:47:22","ac:67:b2:3c:12:96"]
+    # /dev/cu.usbserial-0001 izquierda
+    # /dev/cu.usbserial-3 derecha
     connection_tasks = []
 
     for device in ADDRESS:
@@ -172,7 +183,6 @@ async def main():
 
     await asyncio.gather(*connection_tasks)
 
-    # await asyncio.gather(manage_server(ADDRESS[0], config), manage_server(ADDRESS[1], config)) # ahora solo hay que poner el segundo aca mismo y funca uwu  (en teoria)     
         
             
         
