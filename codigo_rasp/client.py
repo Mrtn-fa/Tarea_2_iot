@@ -130,7 +130,9 @@ CHARACTERISTIC_UUID = "0000ff01-0000-1000-8000-00805F9B34FB" # Busquen este valo
 async def manage_server(device, config):
     while True:
         try:
-            async with BleakClient(device) as client:
+            async with BleakClient(device, timeout=-1) as client:
+                client.connect()
+                print("addres???: ", client.address)
                 while True:
                     actual_config = config.get()
                     print(TAG, "La configuración es", actual_config)
@@ -146,12 +148,13 @@ async def manage_server(device, config):
                     print("Unpacked: ", unpacked)
                     create_data_row(unpacked)
 
-                    # los guarda segun lo protocolo
-                    # queda por hacer
+                   
 
                     if actual_config[0] != 0:
                         # le ponemos que se duerma igual?
+                        client.disconnect()
                         break
+                
         except Exception as e:
             print(e)
 

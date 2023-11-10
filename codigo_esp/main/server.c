@@ -53,28 +53,24 @@ byte* create_body( int* length){
     byte* message = (byte*) malloc(body_size * sizeof(byte));
 
     int batt = batt_level();
-    // uint8_t batt = 51;
     int bytes_acc = arr[0];
     memcpy(message, &batt, 1);
     if (id_protocol >= 1){
         time_t timestamp;
         time(&timestamp);
 
-        // ESP_LOGI("offset","protocol 1: %d", bytes_acc);
-        // ESP_LOGI("create_body","timestamp: %lld", time(NULL));
+        ESP_LOGI("create_body","timestamp: %lld", timestamp);
     
         memcpy(message + bytes_acc, &timestamp, 4);
         bytes_acc += arr[1];
     } if (id_protocol >= 2){
         struct THPC_Data tdata = generate_THPC_Data();
-        ESP_LOGI("offset","protocol 2: %d", bytes_acc);
         memcpy(message + bytes_acc, &tdata.temp, 1);
         memcpy(message + bytes_acc + 1, &tdata.pres, 4);
         memcpy(message + bytes_acc + 5, &tdata.hum, 1);
         memcpy(message + bytes_acc + 6, &tdata.co, 4);
         int temp;
         memcpy(&temp, message + bytes_acc,1);
-        ESP_LOGI("AAA","temp: %d",temp);
         bytes_acc += arr[2];
     } if (id_protocol == 3){
         struct kpi_data kdata = generate_kpi_data();
@@ -479,11 +475,6 @@ static void gatts_profile_a_event_handler(esp_gatts_cb_event_t event, esp_gatt_i
     default:
         break;
     }
-    // if(tl == '1'){
-    //     ESP_LOGI("DEBUG","a mimir");
-    //     // vTaskDelay(5000 / portTICK_PERIOD_MS);
-    //     esp_deep_sleep_start();
-    // }
 }
 
 static void gatts_profile_b_event_handler(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_if, esp_ble_gatts_cb_param_t *param) {
@@ -723,7 +714,7 @@ void app_main(void)
         ESP_LOGE(GATTS_TAG, "set local  MTU failed, error code = %x", local_mtu_ret);
     }
 
-    while(tl == 0){
+    while(tl == '0'){
         vTaskDelay(5000 / portTICK_PERIOD_MS);
     }
     ESP_LOGI("DEBUG","a mimir");
