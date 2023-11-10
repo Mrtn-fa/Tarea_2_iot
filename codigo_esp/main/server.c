@@ -18,7 +18,6 @@ uint8_t batt_level(){
 thpc generate_THPC_Data(){
     struct THPC_Data res;
     res.temp = 5 + rand()%25;
-    res.temp = 10;
     res.hum = 30 + rand()%50;
     res.pres = 1000 + rand()%200;
     res.co = 30 + ((float) rand() / (float) (RAND_MAX)) * 170;
@@ -654,7 +653,7 @@ void app_main(void)
 {
     esp_err_t ret;
 
-    esp_sleep_enable_timer_wakeup(6000000000);
+    esp_sleep_enable_timer_wakeup(30000000); // 30 segundos (ojala)
 
     // Initialize NVS.
     ret = nvs_flash_init();

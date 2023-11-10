@@ -151,7 +151,7 @@ async def manage_server(device, config):
 
                     create_data_row(unpacked)
 
-                   
+                    await asyncio.sleep(1)
 
                     if actual_config[0] == 1:
                         # le ponemos que se duerma igual?
